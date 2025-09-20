@@ -9,7 +9,6 @@ def protected(func: Callable) -> Callable:
     func._is_protected = True  # pylint: disable=protected-access
     return func
 
-
 class CustomSubPages(ui.sub_pages):
     """Custom ui.sub_pages with built-in authentication and custom 404 handling."""
 
@@ -39,43 +38,29 @@ class CustomSubPages(ui.sub_pages):
                 ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
                 ui.button('Go Back', icon='arrow_back', on_click=ui.navigate.back).props('outline')
 
-def config_page(config: ConfigManager):
-    ui.label('Multiview Labels - Configuration')
+    def _is_route_protected(self, handler: Callable) -> bool:
+        return getattr(handler, '_is_protected', False)
 
-    columns = [
-        {'name': 'key', 'label': 'Key', 'field': 'key', 'required': True, 'align': 'left'},
-        {'name': 'value', 'label': 'Value', 'field': 'value', 'align': 'left'},
-    ]
-    for section in config.get_config().sections():
-        ui.label(f'{section}').classes('text-lg font-bold mt-4')
-        rows = []
-        for key, value in config.get_config().items(section):
-            rows.append({'key': key, 'value': value})
-        ui.table(columns=columns, rows=rows, row_key='key').classes('w-full')
+    def _is_authenticated(self) -> bool:
+        return app.storage.user.get('authenticated', False)
 
-        def _is_route_protected(self, handler: Callable) -> bool:
-            return getattr(handler, '_is_protected', False)
+    def _show_login_form(self, intended_path: str) -> None:
+        with ui.card().classes('absolute-center items-stretch'):
+            ui.label('Protected Area').classes('text-2xl')
+            ui.label('Enter passphrase to continue.')
+            passphrase = ui.input('Passphrase', password=True, password_toggle_button=True) \
+                .classes('w-64').props('autofocus')
 
-        def _is_authenticated(self) -> bool:
-            return app.storage.user.get('authenticated', False)
+            def try_login():
+                if passphrase.value == 'spa':
+                    app.storage.user['authenticated'] = True
+                    self._reset_match()  # NOTE: reset the current match to allow the page to be rendered again
+                    ui.navigate.to(intended_path)
+                else:
+                    ui.notify('Incorrect passphrase', color='negative')
 
-        def _show_login_form(self, intended_path: str) -> None:
-            with ui.card().classes('absolute-center items-stretch'):
-                ui.label('Protected Area').classes('text-2xl')
-                ui.label('Enter passphrase to continue.')
-                passphrase = ui.input('Passphrase', password=True, password_toggle_button=True) \
-                    .classes('w-64').props('autofocus')
-
-                def try_login():
-                    if passphrase.value == 'spa':
-                        app.storage.user['authenticated'] = True
-                        self._reset_match()  # NOTE: reset the current match to allow the page to be rendered again
-                        ui.navigate.to(intended_path)
-                    else:
-                        ui.notify('Incorrect passphrase', color='negative')
-
-                passphrase.on('keydown.enter', try_login)
-                ui.button('Login', on_click=try_login)
+            passphrase.on('keydown.enter', try_login)
+            ui.button('Login', on_click=try_login)
 
 
 # Function-like access following NiceGUI convention where classes are callable to feel like functions

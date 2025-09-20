@@ -19,10 +19,15 @@ switcher.connect(SWITCHER_IP)
 
 sources = PyATEMMax.ATEMVideoSources
 
-if(switcher.waitForConnection(infinite=False)):
+print(f"{getattr(sources, 'input1')}")
+
+if(switcher.waitForConnection(infinite=False, timeout=5)):
     print(f"[{time.ctime()}] Switcher connected")
-    name = "Paul"
+    name = "Bob"
     switcher.setInputLongName(sources.input2, f"C2 - {name}")    
 
     switcher.disconnect()
     exit(0)
+else:
+      print(f"[{time.ctime()}] Switcher not connected")
+      exit(1)

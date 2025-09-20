@@ -56,10 +56,16 @@ class ConfigManager:
             self.config.write(configfile)
 
     def get_label_prefix(self, key):
-        return self.config['labels.prefix'].get(key, "Unknown")
+        return self.config['labels.prefix'].get(key, "Unknown").replace('"', '')
     
     def get_label_suffix(self, key):
-        return self.config['labels.suffix'].get(key, "Unknown")
+        return self.config['labels.suffix'].get(key, "Unknown").replace('"', '')
     
     def get_config_headers(self):
         return self.config.sections()
+    
+    def is_prefix_enabled(self):
+        return self.config['app-settings'].getboolean('prefix', fallback=True)
+    
+    def is_suffix_enabled(self):
+        return self.config['app-settings'].getboolean('suffix', fallback=False)
