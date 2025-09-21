@@ -1,11 +1,14 @@
+from time import sleep
 from nicegui import ui
 from pages.custom_sub_pages import custom_sub_pages, protected
 from src.config_manager import ConfigManager
 from src.ATEM import PyAtemMax
 from src.LabelController import LabelController
+import os
 
 config = ConfigManager()
-atem = PyAtemMax("192.168.1.83")
+[host, port] = config.get_connection_information()
+atem = PyAtemMax(host, port)
 labels = LabelController(atem, config)
 
 @ui.page('/')
@@ -37,8 +40,8 @@ def config_page():
 
 def handle_operator_name(name: str, id: int):
     print(f"Setting operator name to: {name} for input {id}")
-    ui.notify(f"Setting operator name to: {name} for input {id}")
-    labels.assign_camera_operator(id, name)
+    status_msg = labels.assign_camera_operator(id, name)
+    ui.notify(status_msg)
 
 def home():
     operator_name = {'value': ''}
@@ -50,6 +53,25 @@ def home():
         ui.item('Input 1', on_click=lambda: handle_operator_name(operator_name['value'], 1))
         ui.item('Input 2', on_click=lambda: handle_operator_name(operator_name['value'], 2))
 
-ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=True)
+def main():
+    try:
+        # ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=False)
+        atem.connect()
+        id = 1
+        name = "Nick"
+        print(f"Setting operator name to: {name} for input {id}")
+        status_msg = labels.assign_camera_operator(id, name)
+        print(status_msg)
 
+        id = 2
+        name = "Tristan"
+        print(f"Setting operator name to: {name} for input {id}")
+        status_msg = labels.assign_camera_operator(id, name)
+        print(status_msg)
+        atem.disconnect()
+    except KeyboardInterrupt:
+        print("\nExiting on keyboard interrupt.")
+
+if __name__ == '__main__':
+    main()
 

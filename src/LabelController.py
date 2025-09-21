@@ -8,7 +8,7 @@ class LabelController:
         self.atem: ATEM_Abstract = atem
         self.config: ConfigManager = config
 
-    def assign_camera_operator(self, input_id: int, operator_name: str) -> None:
+    def assign_camera_operator(self, input_id: int, operator_name: str) -> str:
         """Assign a camera operator's name to a given input."""
 
         label = ""
@@ -22,7 +22,10 @@ class LabelController:
         if(self.config.is_suffix_enabled()):
             suffix = self.config.get_label_suffix(f"input{input_id}")
             label += f"{suffix}"
-
-        self.atem.set_input_long_name(input_id, label)
-        print(f"Updated label for input ID {input_id} to {label}")
-        # Add more logic as needed (e.g., update config, logging)
+        try:
+            # Only set the label, do not connect/disconnect here
+            self.atem.set_input_long_name(input_id, label)
+        except Exception as e:
+            return str(e)
+        
+        return (f"Updated label for input ID {input_id} to {label}")

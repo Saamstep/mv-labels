@@ -48,12 +48,12 @@ class ConfigManager:
             'input8': 'C200'
         }
 
-    def get_config(self):
-        return self.config
-    
     def _save_config(self):
         with open(CONFIG_FILE_NAME, 'w') as configfile:
             self.config.write(configfile)
+
+    def get_config(self):
+        return self.config
 
     def get_label_prefix(self, key):
         return self.config['labels.prefix'].get(key, "Unknown").replace('"', '')
@@ -63,6 +63,11 @@ class ConfigManager:
     
     def get_config_headers(self):
         return self.config.sections()
+    
+    def get_connection_information(self) -> list:
+        host = self.config['atem'].get('host', None)
+        port = self.config['atem'].getint('port', None)
+        return [host, port]
     
     def is_prefix_enabled(self):
         return self.config['app-settings'].getboolean('prefix', fallback=True)
