@@ -28,4 +28,4 @@ class LabelController:
         except Exception as e:
             return str(e)
         
-        return (f"Updated label for input ID {input_id} to {label}")
+        return (f"Updated label for {self.config.input_id_to_camera_name(input_id)} to {label}")

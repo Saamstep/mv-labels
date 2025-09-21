@@ -53,7 +53,6 @@ class PyAtemMax(ATEM_Abstract):
         if connected:
             self.switcher.disconnect()
         else:
-            print("ERROR_DISCONNECT")
             raise Exception("Unable to disconnect from switcher.")
 
     def get_all_video_sources(self) -> PyATEMMax.ATEMVideoSources:

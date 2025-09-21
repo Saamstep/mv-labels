@@ -14,9 +14,9 @@ labels = LabelController(atem, config)
 @ui.page('/')
 @ui.page('/{_:path}')
 def main_page():
-    with ui.header().classes('items-center bg-black'):
-        ui.button('Home', on_click=lambda: ui.navigate.to('/')).props('flat')
-        ui.button('Configuration', on_click=lambda: ui.navigate.to('/config')).props('flat')
+    with ui.header().classes('items-center').style('text-color: white;'):
+        ui.button('Home', on_click=lambda: ui.navigate.to('/')).props('flat color=white')
+        ui.button('Configuration', on_click=lambda: ui.navigate.to('/config')).props('flat color=white')
         ui.space()
 
     custom_sub_pages({
@@ -42,36 +42,35 @@ def handle_operator_name(name: str, id: int):
     print(f"Setting operator name to: {name} for input {id}")
     status_msg = labels.assign_camera_operator(id, name)
     ui.notify(status_msg)
+    if 'operator_input' in globals():
+        operator_input.set_value('')
 
 def home():
+    global operator_input
     operator_name = {'value': ''}
     def on_input_change(e):
         operator_name['value'] = e.value
-    ui.input(label='Camera Operator Name', on_change=on_input_change)
+    operator_input = ui.input(label='Camera Operator Name', on_change=on_input_change)
 
-    with ui.dropdown_button('Camera', auto_close=True):
-        ui.item('Input 1', on_click=lambda: handle_operator_name(operator_name['value'], 1))
-        ui.item('Input 2', on_click=lambda: handle_operator_name(operator_name['value'], 2))
+    with ui.dropdown_button('Select Camera', auto_close=True):
+        for key, value in config.get_camera_mapping():
+            input_id = config.get_input_id(key)
+            ui.item(value, on_click=lambda id=input_id: handle_operator_name(operator_name['value'], id))
 
-def main():
+def app():
     try:
-        # ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=False)
-        atem.connect()
-        id = 1
-        name = "Nick"
-        print(f"Setting operator name to: {name} for input {id}")
-        status_msg = labels.assign_camera_operator(id, name)
-        print(status_msg)
+        if not config.validate_config():
+            raise Exception("Invalid configuration. Please check the config file.")
 
-        id = 2
-        name = "Tristan"
-        print(f"Setting operator name to: {name} for input {id}")
-        status_msg = labels.assign_camera_operator(id, name)
-        print(status_msg)
-        atem.disconnect()
+        if not atem.connect():
+            raise Exception(f"Failed to connect to ATEM switcher at {atem.host}:{atem.port}. Please check connection settings.")
+        else:
+            ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=False)
+
     except KeyboardInterrupt:
+        atem.disconnect()
         print("\nExiting on keyboard interrupt.")
 
 if __name__ == '__main__':
-    main()
+    app()
 
