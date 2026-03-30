@@ -1,3 +1,5 @@
+import re
+
 from .ATEM import ATEM_Abstract
 from .config_manager import ConfigManager
 
@@ -29,3 +31,18 @@ class LabelController:
             return str(e)
         
         return (f"Updated label for input ID {input_id} to {label}")
+    
+    def get_all_labels(self) -> dict:
+        """Get a dictionary of all input IDs and their corresponding labels."""
+        labels = {}
+        video_sources = self.atem.get_all_video_sources()
+
+        for source_name in dir(video_sources):
+            if not re.fullmatch(r"input\d+", source_name):
+                continue
+
+            input_id = int(source_name.replace("input", ""))
+            source = getattr(video_sources, source_name)
+            labels[input_id] = self.atem.switcher.inputProperties[source].longName
+
+        return labels

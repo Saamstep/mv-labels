@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multiview Labels</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <main class="page-shell">
+      <section class="hero-card">
+        <div>
+          <p class="eyebrow">ATEM Connector</p>
+          <h1>Multiview Labels</h1>
+          <p class="subcopy">
+            Launch the bundled backend, call <code>/labels</code>, and inspect the current long labels in a table.
+          </p>
+        </div>
+        <button id="reload-labels" class="btn btn-primary" type="button">Reload Labels</button>
+      </section>
+
+      <p id="status-msg" class="status-msg">Starting atemconnector...</p>
+
+      <section class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 table-shell">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Source</th>
+              <th>Label</th>
+            </tr>
+          </thead>
+          <tbody id="labels-table-body"></tbody>
+        </table>
+        <div id="labels-empty" class="empty-state">No labels loaded yet.</div>
+      </section>
+    </main>
+  </body>
+</html>

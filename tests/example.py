@@ -1,12 +1,3 @@
-from src.config_manager import ConfigManager
-from src.ATEM import PyAtemMax
-from src.LabelController import LabelController
-
-config = ConfigManager()
-[host, port] = config.get_connection_information()
-atem = PyAtemMax(host, port)
-labels = LabelController(atem, config)
-
 def main():
     try:
         # ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=False)
@@ -28,4 +19,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
