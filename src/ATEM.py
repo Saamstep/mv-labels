@@ -72,6 +72,6 @@ class PyAtemMax(ATEM_Abstract):
         self.switcher.setInputLongName(source, name)
             # self.disconnect()
         # else:
-            # print("ERROR_SET_LONG_INPUT_NAME")
+            # rint("ERROR_SET_LONG_INPUT_NAME")
             # raise Exception("Unable to connect to switcher")
 

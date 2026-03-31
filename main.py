@@ -1,76 +1,77 @@
-from time import sleep
-from nicegui import ui
-from pages.custom_sub_pages import custom_sub_pages, protected
-from src.config_manager import ConfigManager
-from src.ATEM import PyAtemMax
-from src.LabelController import LabelController
-import os
+from pathlib import Path
 
-config = ConfigManager()
-[host, port] = config.get_connection_information()
-atem = PyAtemMax(host, port)
-labels = LabelController(atem, config)
+from nicegui import app as nicegui_app, ui
+from pages.config_page import build_config_page
+from pages.custom_sub_pages import custom_sub_pages
+from pages.home_page import build_home_page
+from pages.sources_page import build_sources_page
+from src.app_state import AppState
+from src.theme import apply_theme
+
+ASSETS_DIR = Path(__file__).resolve().parent / 'assets'
+LOGO_CANDIDATES = ('logo.svg', 'logo.png', 'logo.jpg', 'logo.jpeg', 'logo.webp')
+
+state = AppState()
+apply_theme()
+nicegui_app.add_static_files('/assets', ASSETS_DIR)
+
+
+def get_logo_src() -> str | None:
+    for filename in LOGO_CANDIDATES:
+        if (ASSETS_DIR / filename).exists():
+            return f'/assets/{filename}'
+    return None
 
 @ui.page('/')
 @ui.page('/{_:path}')
 def main_page():
-    with ui.header().classes('items-center').style('text-color: white;'):
-        ui.button('Home', on_click=lambda: ui.navigate.to('/')).props('flat color=white')
-        ui.button('Configuration', on_click=lambda: ui.navigate.to('/config')).props('flat color=white')
-        ui.space()
+    logo_src = get_logo_src()
 
-    custom_sub_pages({
-        '/': home,
-        '/config': config_page,
-    }).classes('flex-grow p-4')
+    with ui.header().classes('mv-topbar'):
+        with ui.row().classes('mv-app-shell w-full items-center gap-2 py-3'):
+            with ui.row().classes('mv-brand-group items-center gap-3').on('click', lambda: ui.navigate.to('/')):
+                if logo_src:
+                    ui.image(logo_src).classes('mv-brand-logo')
+                else:
+                    with ui.element('div').classes('mv-logo-placeholder'):
+                        ui.label('Logo').classes('mv-logo-placeholder-text')
+                ui.label('MV Labels').classes('text-lg font-black tracking-wide text-white')
+            ui.button('Sources', on_click=lambda: ui.navigate.to('/sources')).props('flat no-caps').classes('mv-nav-btn')
+            ui.button('Configuration', on_click=lambda: ui.navigate.to('/config')).props('flat no-caps').classes('mv-nav-btn')
+            ui.space()
+            ui.label('Studio control').classes('mv-badge')
+
+    with ui.column().classes('mv-app-shell mv-panel w-full gap-6'):
+        custom_sub_pages({
+            '/': home_page,
+            '/sources': sources_page,
+            '/config': config_page,
+        }).classes('w-full')
+
+def home_page():
+    build_home_page(state)
+
+@ui.page('/sources')
+def sources_page():
+    build_sources_page(state)
 
 @ui.page('/config')
 def config_page():
-    ui.label('Multiview Labels - Configuration')
-    columns = [
-        {'name': 'key', 'label': 'Key', 'field': 'key', 'required': True, 'align': 'left'},
-        {'name': 'value', 'label': 'Value', 'field': 'value', 'align': 'left'},
-    ]
-    for section in config.get_config().sections():
-        ui.label(f'Section: {section}').classes('text-lg font-bold mt-4')
-        rows = []
-        for key, value in config.get_config().items(section):
-            rows.append({'key': key, 'value': value})
-        ui.table(columns=columns, rows=rows, row_key='key').classes('w-full')
-
-def handle_operator_name(name: str, id: int):
-    print(f"Setting operator name to: {name} for input {id}")
-    status_msg = labels.assign_camera_operator(id, name)
-    ui.notify(status_msg)
-    if 'operator_input' in globals():
-        operator_input.set_value('')
-
-def home():
-    global operator_input
-    operator_name = {'value': ''}
-    def on_input_change(e):
-        operator_name['value'] = e.value
-    operator_input = ui.input(label='Camera Operator Name', on_change=on_input_change)
-
-    with ui.dropdown_button('Select Camera', auto_close=True):
-        for key, value in config.get_camera_mapping():
-            input_id = config.get_input_id(key)
-            ui.item(value, on_click=lambda id=input_id: handle_operator_name(operator_name['value'], id))
+    build_config_page(state)
 
 def app():
     try:
-        if not config.validate_config():
+        if not state.config.validate_config():
             raise Exception("Invalid configuration. Please check the config file.")
 
-        if not atem.connect():
-            raise Exception(f"Failed to connect to ATEM switcher at {atem.host}:{atem.port}. Please check connection settings.")
+        if not state.atem.connect():
+            raise Exception(f"Failed to connect to ATEM switcher at {state.atem.host}:{state.atem.port}. Please check connection settings.")
         else:
-            ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=False)
+            ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=True, show=False, favicon=get_logo_src())
 
     except KeyboardInterrupt:
-        atem.disconnect()
+        state.atem.disconnect()
         print("\nExiting on keyboard interrupt.")
 
-if __name__ == '__main__':
+if __name__ in {'__main__', '__mp_main__'}:
     app()
-

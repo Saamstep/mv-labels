@@ -4,3 +4,14 @@ dist/
 __pycache__/
 mv-labels/
 .env
+*.jpg
+*.png
+*.ico
+*.log
+*.bak
+*.tmp
+*.swp
+*.swo
+*.DS_Store
+.idea/
+.vscode/

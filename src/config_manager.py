@@ -10,59 +10,87 @@ class ConfigManager:
         if(Path(CONFIG_FILE_NAME).is_file()):
             # Load existing config
             self.config.read(CONFIG_FILE_NAME)
+            if self._ensure_defaults():
+                self._save_config()
             print("Loading existing configuration file...")
             print(f"Found {len(self.get_all_inputs())} video inputs in configuration.")
         else:
             # Create default config if path does not exist
             self._default_config()
-            with open(CONFIG_FILE_NAME, 'w') as configfile:
-                self.config.write(configfile)
+            self._save_config()
+
+    def _default_sections(self) -> dict:
+        return {
+            'atem': {
+                'host': '0.0.0.0',
+                'port': '9910'
+            },
+            'app-settings': {
+                'prefix': 'yes',
+                'suffix': 'no'
+            },
+            'input-mapping': {
+                'input1': 'Camera 1',
+                'input2': 'Camera 2',
+                'input3': 'Camera 3',
+                'input4': 'Camera 4',
+                'input5': 'Camera 5',
+                'input6': 'Camera 6',
+                'input7': 'Camera 7',
+                'input8': 'Camera 8'
+            },
+            'labels.prefix': {
+                'input1': 'C1',
+                'input2': 'C2',
+                'input3': 'C3',
+                'input4': 'C4',
+                'input5': 'C5',
+                'input6': 'C6',
+                'input7': 'C7',
+                'input8': 'C8'
+            },
+            'labels.suffix': {
+                'input1': 'C200',
+                'input2': 'C200',
+                'input3': 'C200',
+                'input4': 'C200',
+                'input5': 'C200',
+                'input6': 'C200',
+                'input7': 'C200',
+                'input8': 'C200'
+            }
+        }
 
     def _default_config(self):
         """Create a default config structure
         """
-        self.config['atem'] = {
-            'host': '0.0.0.0',
-            'port': '9910'
-        }
-        self.config['app-settings'] = {
-            'prefix': 'yes',
-            'suffix': 'no'
-        }
-        self.config['input-mapping'] = {
-            'input1': 'Camera 1',
-            'input2': 'Camera 2',
-            'input3': 'Camera 3',
-            'input4': 'Camera 4',
-            'input5': 'Camera 5',
-            'input6': 'Camera 6',
-            'input7': 'Camera 7',
-            'input8': 'Camera 8'
-        }
-        self.config['labels.prefix'] = {
-            'input1': 'C1',
-            'input2': 'C2',
-            'input3': 'C3',
-            'input4': 'C4',
-            'input5': 'C5',
-            'input6': 'C6',
-            'input7': 'C7',
-            'input8': 'C8'
-        }
-        self.config['labels.suffix'] = {
-            'input1': 'C200',
-            'input2': 'C200',
-            'input3': 'C200',
-            'input4': 'C200',
-            'input5': 'C200',
-            'input6': 'C200',
-            'input7': 'C200',
-            'input8': 'C200'
-        }
+        self.config.read_dict(self._default_sections())
+
+    def _ensure_defaults(self) -> bool:
+        changed = False
+        for section, values in self._default_sections().items():
+            if not self.config.has_section(section):
+                self.config[section] = values
+                changed = True
+                continue
+
+            for key, value in values.items():
+                if key not in self.config[section]:
+                    self.config[section][key] = value
+                    changed = True
+        return changed
 
     def _save_config(self):
         with open(CONFIG_FILE_NAME, 'w') as configfile:
             self.config.write(configfile)
+
+    def save(self):
+        self._save_config()
+
+    def set_value(self, section: str, key: str, value: str):
+        if not self.config.has_section(section):
+            self.config.add_section(section)
+        self.config.set(section, key, value)
 
     def get_config(self):
         return self.config
