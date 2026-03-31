@@ -94,6 +94,35 @@ def apply_theme() -> None:
             line-height: 1.2;
         }}
 
+        .mv-config-table {{
+            margin-top: 1rem;
+            border-top: 1px solid rgba(142, 185, 199, 0.14);
+        }}
+
+        .mv-config-table-head {{
+            padding: 0.8rem 0 0.7rem;
+            color: var(--mv-text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }}
+
+        .mv-config-table-row {{
+            padding: 0.9rem 0;
+            border-top: 1px solid rgba(142, 185, 199, 0.1);
+        }}
+
+        .mv-config-table-source {{
+            flex: 1 1 220px;
+            min-width: 180px;
+        }}
+
+        .mv-config-table-column {{
+            flex: 1 1 220px;
+            min-width: 180px;
+        }}
+
         .mv-badge {{
             display: inline-flex;
             align-items: center;
