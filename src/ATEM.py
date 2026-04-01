@@ -7,6 +7,8 @@ class ATEM_Abstract(ABC):
     def __init__(self, host: str, port: int = 9910):
         self.host = host  # Host address as string
         self.port = port  # Default port as integer
+        self.connected = False # Flag to track if currently connected to the switcher
+        self.model = "Disconnected" # Switcher model name
 
     @abstractmethod
     def connect(self):
@@ -33,6 +35,7 @@ class PyAtemMax(ATEM_Abstract):
     def __init__(self, host: str, port: int = 9910):
         super().__init__(host, port)  # Pass host and port to base class
         self.switcher = PyATEMMax.ATEMMax()
+        self.connected = False
 
     def connect(self) -> bool:
         print("Connecting to switcher at ", self.host, ":", self.port, sep="")
@@ -40,11 +43,14 @@ class PyAtemMax(ATEM_Abstract):
         self.switcher.connect(self.host, self.port)
         connected = self.switcher.waitForConnection(infinite=False, timeout=5)
         if connected:
-            print(f"Connected to switcher")
+            self.model = self.switcher.atemModel
+            print(f"Connected to switcher model: {self.model} at {self.host}:{self.port}")
+            self.connected = True
             return True
         else:
             print(f"Unable to connect to the switcher")
             self.switcher.disconnect()
+            self.connected = False
             return False
 
     def disconnect(self):
@@ -55,8 +61,8 @@ class PyAtemMax(ATEM_Abstract):
         else:
             raise Exception("Unable to disconnect from switcher.")
 
-    def get_all_video_sources(self) -> PyATEMMax.ATEMVideoSources:
-        return PyATEMMax.ATEMVideoSources
+    def get_all_video_sources(self) -> list[PyATEMMax.ATEMVideoSources]:
+        return list(self.switcher.atem.videoSources)
 
     def get_video_input(self, id: int) -> None:
         print(f"Getting video input for ID {id}")

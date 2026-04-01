@@ -39,7 +39,9 @@ def main_page():
             ui.button('Sources', on_click=lambda: ui.navigate.to('/sources')).props('flat no-caps').classes('mv-nav-btn')
             ui.button('Configuration', on_click=lambda: ui.navigate.to('/config')).props('flat no-caps').classes('mv-nav-btn')
             ui.space()
-            ui.label('Studio control').classes('mv-badge')
+            with ui.row().classes('mv-badge items-center'):
+                ui.icon(state.atem.connected and 'check_circle' or 'cancel').classes(state.atem.connected and 'text-green-500' or 'text-red-500')
+                ui.label(state.atem.model)
 
     with ui.column().classes('mv-app-shell mv-panel w-full gap-6'):
         custom_sub_pages({
@@ -64,13 +66,12 @@ def app():
         if not state.config.validate_config():
             raise Exception("Invalid configuration. Please check the config file.")
 
-        if not state.atem.connect():
-            raise Exception(f"Failed to connect to ATEM switcher at {state.atem.host}:{state.atem.port}. Please check connection settings.")
-        else:
-            ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=True, show=False, favicon=get_logo_src())
+        state.atem.connect()
+        ui.run(storage_secret="hi", title='Multiview Labels', dark=True, reload=False, show=False, favicon=get_logo_src())
 
     except KeyboardInterrupt:
-        state.atem.disconnect()
+        if state.atem.connected:
+            state.atem.disconnect()
         print("\nExiting on keyboard interrupt.")
 
 if __name__ in {'__main__', '__mp_main__'}:

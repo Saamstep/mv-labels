@@ -123,6 +123,15 @@ def apply_theme() -> None:
             min-width: 180px;
         }}
 
+        .mv-config-table-actions {{
+            flex: 0 0 56px;
+            min-width: 56px;
+        }}
+
+        .mv-row-action.q-btn {{
+            border-radius: 10px;
+        }}
+
         .mv-badge {{
             display: inline-flex;
             align-items: center;
@@ -155,11 +164,12 @@ def apply_theme() -> None:
             border-radius: 12px;
             font-weight: 700;
             letter-spacing: 0.01em;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
         }}
 
         .q-btn:hover {{
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            filter: brightness(1.08);
         }}
 
         .mv-primary-btn.q-btn,
@@ -167,6 +177,14 @@ def apply_theme() -> None:
             background: linear-gradient(135deg, var(--mv-primary), #3C88A2);
             color: #F8FCFD;
             box-shadow: 0 12px 28px rgba(43, 115, 139, 0.28);
+        }}
+
+        .mv-primary-btn.q-btn:hover,
+        .mv-primary-btn .q-btn:hover,
+        .mv-primary-btn.q-btn:focus-visible,
+        .mv-primary-btn .q-btn:focus-visible {{
+            box-shadow: 0 18px 38px rgba(43, 115, 139, 0.42);
+            filter: brightness(1.14) saturate(1.08);
         }}
 
         .mv-nav-btn.q-btn {{
@@ -219,8 +237,16 @@ def apply_theme() -> None:
 
         .mv-nav-btn.q-btn:hover,
         .mv-nav-btn.q-btn:focus-visible {{
-            background: rgba(142, 185, 199, 0.12);
-            border-color: rgba(142, 185, 199, 0.18);
+            background: rgba(142, 185, 199, 0.22);
+            border-color: rgba(142, 185, 199, 0.34);
+            box-shadow: 0 10px 24px rgba(7, 19, 24, 0.22);
+        }}
+
+        .mv-row-action.q-btn:hover,
+        .mv-row-action.q-btn:focus-visible {{
+            background: rgba(197, 97, 97, 0.18);
+            box-shadow: 0 10px 24px rgba(197, 97, 97, 0.22);
+            filter: brightness(1.1);
         }}
 
         .mv-input .q-field__control,
@@ -302,5 +328,6 @@ def apply_theme() -> None:
     ui.card.default_classes('mv-card')
     ui.input.default_classes('mv-input')
     ui.number.default_classes('mv-input')
+    ui.select.default_classes('mv-input')
 
     _THEME_APPLIED = True
